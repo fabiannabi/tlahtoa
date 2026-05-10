@@ -10,14 +10,20 @@ import {
   type PhaseInput,
   type CyclePhase,
 } from '@tlahtoa/core';
+import {
+  MaizGlyph, CopalGlyph, JadeGlyph, FtGlyph, ConocimientoGlyph,
+  MilpaGlyph, MercadoGlyph, ArtesanosGlyph, EscribasGlyph, TemploGlyph,
+} from './glyphs';
 import './styles.css';
 
+// ── Labels ────────────────────────────────────────────────────────────────────
+
 const LABEL_RECURSO: Record<ResourceKind, string> = {
-  maiz:         'Maíz — Tlaolli',
-  copal:        'Copal — Copalli',
-  jade:         'Jade — Chalchiuitl',
+  maiz:         'Maíz',
+  copal:        'Copal',
+  jade:         'Jade',
   ft:           'Fuerza de Trabajo',
-  conocimiento: 'Conocimiento — Toltecayotl',
+  conocimiento: 'Conocimiento',
 };
 
 const LABEL_ROL: Record<RoleId, string> = {
@@ -37,6 +43,26 @@ const PHASE_LABELS: Record<CyclePhase, string> = {
   completo: 'Completo',
 };
 
+// ── Glyph maps ────────────────────────────────────────────────────────────────
+
+const GLYPH_RECURSO = {
+  maiz:         MaizGlyph,
+  copal:        CopalGlyph,
+  jade:         JadeGlyph,
+  ft:           FtGlyph,
+  conocimiento: ConocimientoGlyph,
+};
+
+const GLYPH_BARRIO = {
+  norte:  MilpaGlyph,
+  sur:    MercadoGlyph,
+  este:   ArtesanosGlyph,
+  oeste:  EscribasGlyph,
+  centro: TemploGlyph,
+};
+
+// ── Initial state ─────────────────────────────────────────────────────────────
+
 const INITIAL_STATE = createInitialState({
   scenarioId: 1,
   jugadores: [
@@ -47,6 +73,8 @@ const INITIAL_STATE = createInitialState({
   ],
   seed: 20250510,
 });
+
+// ── Default phase input ───────────────────────────────────────────────────────
 
 function getDefaultInput(state: GameState): PhaseInput {
   const phase = state.activeCycle.phase;
@@ -86,7 +114,7 @@ function getDefaultInput(state: GameState): PhaseInput {
   }
 }
 
-// ── Risk panel ────────────────────────────────────────────────────────────────
+// ── Risk computation ──────────────────────────────────────────────────────────
 
 interface RiskItem { label: string; level: 'ok' | 'warn' | 'crit'; }
 
@@ -96,7 +124,6 @@ function computeRisks(state: GameState): RiskItem[] {
   const cyclesLeft = scenario.totalCycles - currentCycle + 1;
   const items: RiskItem[] = [];
 
-  // Maíz
   if (resources.maiz.value === 0) {
     const streak = consecutiveMaizZero >= 1 ? ` (ciclo ${consecutiveMaizZero} de 2)` : '';
     items.push({ label: `Maíz agotado${streak}`, level: 'crit' });
@@ -104,45 +131,36 @@ function computeRisks(state: GameState): RiskItem[] {
     items.push({ label: `Maíz crítico: ${resources.maiz.value}`, level: 'warn' });
   }
 
-  // Copal
   if (resources.copal.value === 0) {
     items.push({ label: 'Copal agotado — derrota inminente', level: 'crit' });
   } else if (resources.copal.value <= 1) {
     items.push({ label: `Copal crítico: ${resources.copal.value} — haz un ritual`, level: 'warn' });
   }
 
-  // Districts
   if (scenario.difficulty === 'facil') {
     if (inactiveCount >= 2)
       items.push({ label: `${inactiveCount} barrios caídos — 1 más = derrota`, level: 'crit' });
     else if (inactiveCount === 1)
       items.push({ label: '1 barrio caído', level: 'warn' });
-  } else if (scenario.difficulty === 'normal') {
-    if (inactiveCount >= 1)
-      items.push({ label: `${inactiveCount} barrio caído — 1 más = derrota`, level: 'crit' });
+  } else if (scenario.difficulty === 'normal' && inactiveCount >= 1) {
+    items.push({ label: `${inactiveCount} barrio caído — 1 más = derrota`, level: 'crit' });
   }
 
-  // Cycles left
-  if (cyclesLeft <= 0) {
-    items.push({ label: 'Último ciclo', level: 'crit' });
-  } else if (cyclesLeft <= 2) {
-    items.push({ label: `${cyclesLeft} ciclos restantes`, level: 'warn' });
-  } else {
-    items.push({ label: `${cyclesLeft} ciclos restantes`, level: 'ok' });
-  }
+  items.push({
+    label: `${Math.max(0, cyclesLeft)} ciclos restantes`,
+    level: cyclesLeft <= 1 ? 'crit' : cyclesLeft <= 3 ? 'warn' : 'ok',
+  });
 
-  // Gran Milpa progress (scenario 1 only)
   if (scenario.difficulty === 'facil' && !state.greatMilpaCompleted) {
-    const conocOk = resources.conocimiento.value >= 5;
-    const ftOk = resources.ft.value >= 4;
-    const maizOk = resources.maiz.value >= 3;
-    const jadeOk = resources.jade.value >= 2;
-    const allOk = conocOk && ftOk && maizOk && jadeOk;
+    const r = resources;
+    const ready =
+      r.conocimiento.value >= 5 && r.ft.value >= 4 &&
+      r.maiz.value >= 3 && r.jade.value >= 2;
     items.push({
-      label: allOk
+      label: ready
         ? '¡Gran Milpa disponible!'
-        : `Gran Milpa: Conoc. ${resources.conocimiento.value}/5 · FT ${resources.ft.value}/4 · Maíz ${resources.maiz.value}/3 · Jade ${resources.jade.value}/2`,
-      level: allOk ? 'ok' : 'warn',
+        : `Gran Milpa: Conoc. ${r.conocimiento.value}/5 · FT ${r.ft.value}/4 · Maíz ${r.maiz.value}/3 · Jade ${r.jade.value}/2`,
+      level: ready ? 'ok' : 'warn',
     });
   }
 
@@ -183,7 +201,7 @@ export function App() {
 
   const isOver = state.result !== 'en_curso';
   const cycleDisplay = Math.min(state.currentCycle, state.scenario.totalCycles);
-  const recentLog = [...state.log].reverse().slice(0, 12);
+  const recentLog = [...state.log].reverse().slice(0, 14);
 
   const canAttemptGranMilpa =
     !isOver &&
@@ -196,18 +214,18 @@ export function App() {
     state.resources.jade.value >= 2;
 
   const milpaVoteUnanimous = state.players.every((p) => milpaVotes[p.role] === true);
-
   const risks = computeRisks(state);
 
   return (
     <main className="app">
+
+      {/* ── Header ──────────────────────────────────────────────────── */}
       <h1>Tlahtoa</h1>
 
-      {/* ── Status bar ──────────────────────────────────────────── */}
       <div className="status-bar">
         <span className="status-scenario">{state.scenario.nombre}</span>
         <span className="status-cycle">
-          Ciclo {cycleDisplay}/{state.scenario.totalCycles}
+          Ciclo {cycleDisplay} / {state.scenario.totalCycles}
         </span>
         <span className={`status-phase fase-${state.activeCycle.phase}`}>
           {PHASE_LABELS[state.activeCycle.phase]}
@@ -218,20 +236,27 @@ export function App() {
         </span>
       </div>
 
-      {/* ── Controls ────────────────────────────────────────────── */}
+      {isOver && (
+        <div className={`end-banner result-${state.result}`}>
+          {state.result === 'victoria'
+            ? '¡El consejo ha guiado la ciudad a la prosperidad!'
+            : (state.defeatReason ?? 'La ciudad no pudo sostenerse.')}
+        </div>
+      )}
+
+      {!isOver && (
+        <div className="risks-panel">
+          {risks.map((r, i) => (
+            <span key={i} className={`risk-item risk-${r.level}`}>{r.label}</span>
+          ))}
+        </div>
+      )}
+
       <div className="controls">
-        <button
-          className="btn-primary"
-          onClick={handleNextPhase}
-          disabled={isOver}
-        >
+        <button className="btn-primary" onClick={handleNextPhase} disabled={isOver}>
           Siguiente fase →
         </button>
-        <button
-          className="btn-secondary"
-          onClick={handleSkipCycle}
-          disabled={isOver}
-        >
+        <button className="btn-secondary" onClick={handleSkipCycle} disabled={isOver}>
           Ciclo completo ⏭
         </button>
         {canAttemptGranMilpa && (
@@ -244,30 +269,124 @@ export function App() {
         </button>
       </div>
 
-      {/* ── End banner ──────────────────────────────────────────── */}
-      {isOver && (
-        <div className={`end-banner result-${state.result}`}>
-          {state.result === 'victoria'
-            ? '¡El consejo ha guiado la ciudad a la prosperidad!'
-            : (state.defeatReason ?? 'La ciudad no pudo sostenerse.')}
-        </div>
-      )}
+      {/* ── 3-column layout ─────────────────────────────────────────── */}
+      <div className="layout-grid">
 
-      {/* ── Risks panel ─────────────────────────────────────────── */}
-      {!isOver && (
-        <div className="risks-panel">
-          {risks.map((r, i) => (
-            <span key={i} className={`risk-item risk-${r.level}`}>{r.label}</span>
-          ))}
-        </div>
-      )}
+        {/* LEFT — Resources + Districts */}
+        <aside className="col-left">
+          <section className="panel">
+            <h2>Recursos</h2>
+            <ul className="recursos">
+              {(Object.keys(state.resources) as ResourceKind[]).map((key) => {
+                const r = state.resources[key];
+                const pct = Math.round((r.value / r.max) * 100);
+                const GlyphComp = GLYPH_RECURSO[key];
+                return (
+                  <li key={key}>
+                    <span className="resource-glyph">
+                      <GlyphComp size={18} color="var(--jade)" />
+                    </span>
+                    <span className="resource-name">{LABEL_RECURSO[key]}</span>
+                    <div className="resource-bar-wrap">
+                      <div className="resource-bar" style={{ width: `${pct}%` }} />
+                    </div>
+                    <span className="resource-value">
+                      {r.value}<span className="resource-max">/{r.max}</span>
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
 
-      {/* ── Gran Milpa modal ────────────────────────────────────── */}
+          <section className="panel">
+            <h2>Barrios</h2>
+            <ul className="barrios">
+              {(Object.keys(state.districts) as DistrictId[]).map((id) => {
+                const b = state.districts[id];
+                const GlyphComp = GLYPH_BARRIO[id];
+                return (
+                  <li key={id}>
+                    <span className="barrio-glyph">
+                      <GlyphComp
+                        size={18}
+                        color={b.active ? 'var(--jade)' : 'var(--muted)'}
+                      />
+                    </span>
+                    <span className="barrio-nombre">{b.nombre}</span>
+                    <span className={`barrio-estado ${b.active ? 'activo' : 'caido'}`}>
+                      {b.active ? '✓' : '✗'}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        </aside>
+
+        {/* CENTER — Event deck */}
+        <div className="col-center">
+          <section className="panel">
+            <h2>Mazo de eventos ({state.eventDeck.length} cartas)</h2>
+            {state.activeCycle.drawnEvent && (
+              <div className={`drawn-event carta-${state.activeCycle.drawnEvent.category}`}>
+                <span className="carta-cat">{state.activeCycle.drawnEvent.category}</span>
+                <span className="carta-nombre">{state.activeCycle.drawnEvent.nombre}</span>
+              </div>
+            )}
+            <ul className="mazo">
+              {state.eventDeck.slice(0, 5).map((carta, i) => (
+                <li key={carta.id} className={`carta-${carta.category}`}>
+                  <span className="carta-pos">#{i + 1}</span>
+                  <span className="carta-nombre">{carta.nombre}</span>
+                  <span className="carta-cat">{carta.category}</span>
+                </li>
+              ))}
+              {state.eventDeck.length > 5 && (
+                <li className="mazo-more">+{state.eventDeck.length - 5} más…</li>
+              )}
+            </ul>
+          </section>
+        </div>
+
+        {/* RIGHT — Council + Log */}
+        <aside className="col-right">
+          <section className="panel">
+            <h2>Consejo</h2>
+            <ul className="jugadores">
+              {state.players.map((j) => (
+                <li key={j.role}>
+                  <span className="rol-nombre">{LABEL_ROL[j.role]}</span>
+                  <span className="rol-info">
+                    {j.nombre} · Nv.{j.level} · {j.actionsLeft} acc.
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="panel">
+            <h2>Bitácora</h2>
+            <ul className="log">
+              {recentLog.map((entry, i) => (
+                <li key={i}>
+                  <span className="log-meta">
+                    C{entry.cycle} · {PHASE_LABELS[entry.phase]}
+                  </span>
+                  <span className="log-msg">{entry.mensaje}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </aside>
+      </div>
+
+      {/* ── Gran Milpa modal ────────────────────────────────────────── */}
       {showMilpaModal && (
         <div className="modal-overlay" onClick={() => setShowMilpaModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>Gran Milpa — Votación del Consejo</h3>
-            <p className="modal-cost">Coste: Maíz −3, Jade −2. Requiere unanimidad.</p>
+            <p className="modal-cost">Coste: Maíz −3, Jade −2 · Requiere unanimidad</p>
             <ul className="milpa-votes">
               {state.players.map((p) => (
                 <li key={p.role}>
@@ -306,101 +425,6 @@ export function App() {
           </div>
         </div>
       )}
-
-      <div className="board-grid">
-        {/* ── Recursos ──────────────────────────────────────────── */}
-        <section className="panel">
-          <h2>Recursos</h2>
-          <ul className="recursos">
-            {(Object.keys(state.resources) as ResourceKind[]).map((key) => {
-              const r = state.resources[key];
-              const pct = Math.round((r.value / r.max) * 100);
-              return (
-                <li key={key}>
-                  <span className="resource-name">{LABEL_RECURSO[key]}</span>
-                  <div className="resource-bar-wrap">
-                    <div className="resource-bar" style={{ width: `${pct}%` }} />
-                  </div>
-                  <span className="resource-value">
-                    {r.value}<span className="resource-max">/{r.max}</span>
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-
-        {/* ── Barrios ───────────────────────────────────────────── */}
-        <section className="panel">
-          <h2>Barrios</h2>
-          <ul className="barrios">
-            {(Object.keys(state.districts) as DistrictId[]).map((id) => {
-              const b = state.districts[id];
-              return (
-                <li key={id} data-activo={b.active}>
-                  <span className="barrio-nombre">{b.nombre}</span>
-                  <span className={`barrio-estado ${b.active ? 'activo' : 'caido'}`}>
-                    {b.active ? 'Activo' : 'Caído'}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-
-        {/* ── Consejo ───────────────────────────────────────────── */}
-        <section className="panel">
-          <h2>Consejo</h2>
-          <ul className="jugadores">
-            {state.players.map((j) => (
-              <li key={j.role}>
-                <span className="rol-nombre">{LABEL_ROL[j.role]}</span>
-                <span className="rol-info">
-                  {j.nombre} · Nv.{j.level} · {j.actionsLeft} acc.
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        {/* ── Próximo evento ────────────────────────────────────── */}
-        <section className="panel">
-          <h2>Mazo ({state.eventDeck.length} cartas)</h2>
-          {state.activeCycle.drawnEvent && (
-            <div className={`drawn-event carta-${state.activeCycle.drawnEvent.category}`}>
-              <span className="carta-cat">{state.activeCycle.drawnEvent.category}</span>
-              <span className="carta-nombre">{state.activeCycle.drawnEvent.nombre}</span>
-            </div>
-          )}
-          <ul className="mazo">
-            {state.eventDeck.slice(0, 4).map((carta, i) => (
-              <li key={carta.id} className={`carta-${carta.category}`}>
-                <span className="carta-pos">#{i + 1}</span>
-                <span className="carta-nombre">{carta.nombre}</span>
-                <span className="carta-cat">{carta.category}</span>
-              </li>
-            ))}
-            {state.eventDeck.length > 4 && (
-              <li className="mazo-more">+{state.eventDeck.length - 4} más…</li>
-            )}
-          </ul>
-        </section>
-      </div>
-
-      {/* ── Bitácora ──────────────────────────────────────────────── */}
-      <section className="panel panel-log">
-        <h2>Bitácora</h2>
-        <ul className="log">
-          {recentLog.map((entry, i) => (
-            <li key={i}>
-              <span className="log-meta">
-                C{entry.cycle} · {PHASE_LABELS[entry.phase]}
-              </span>
-              <span className="log-msg">{entry.mensaje}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
     </main>
   );
 }
