@@ -100,6 +100,7 @@ export interface CurrentCycle {
   number: number;
   phase: CyclePhase;
   hadRitual: boolean;
+  drawnEvent: EventCard | null;
 }
 
 // ── Result and log ────────────────────────────────────────────────────────────
@@ -117,6 +118,7 @@ export interface LogEntry {
 export interface GameState {
   scenario: Scenario;
   currentCycle: number;
+  consecutiveMaizZero: number;
   resources: Resources;
   districts: Record<DistrictId, District>;
   players: Player[];

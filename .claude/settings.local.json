@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh --version)",
+      "Bash(git --version)",
+      "Bash(git init *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(gh repo *)",
+      "Bash(pnpm --version)",
+      "Bash(npm install *)",
+      "Bash(npx pnpm *)",
+      "Bash(pnpm install *)",
+      "Bash(pnpm typecheck *)",
+      "Bash(git reset *)",
+      "Bash(git push *)",
+      "Bash(pnpm test *)"
+    ]
+  }
+}
