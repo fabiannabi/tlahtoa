@@ -1,7 +1,7 @@
-// Mulberry32 — rápido, seedable, distribución uniforme
+// Mulberry32 — fast, seedable, uniform distribution
 export type Rng = () => number;
 
-export function crearRng(seed: number): Rng {
+export function createRng(seed: number): Rng {
   let s = seed >>> 0;
   return function () {
     s = (s + 0x6d2b79f5) >>> 0;
@@ -11,7 +11,7 @@ export function crearRng(seed: number): Rng {
   };
 }
 
-export function barajar<T>(arr: readonly T[], rng: Rng): T[] {
+export function shuffle<T>(arr: readonly T[], rng: Rng): T[] {
   const result = [...arr];
   for (let i = result.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));

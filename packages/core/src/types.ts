@@ -1,41 +1,42 @@
-// ── Recursos ─────────────────────────────────────────────────────────────────
+// ── Resources ─────────────────────────────────────────────────────────────────
 
 export type ResourceKind = 'maiz' | 'copal' | 'jade' | 'ft' | 'conocimiento';
 
-export interface Recurso {
-  valor: number;
-  maximo: number;
+export interface Resource {
+  value: number;
+  max: number;
 }
 
-export type Recursos = Record<ResourceKind, Recurso>;
+export type Resources = Record<ResourceKind, Resource>;
 
-// ── Barrios ───────────────────────────────────────────────────────────────────
+// ── Districts ─────────────────────────────────────────────────────────────────
 
-export type BarrioId = 'norte' | 'sur' | 'este' | 'oeste' | 'centro';
+export type DistrictId = 'norte' | 'sur' | 'este' | 'oeste' | 'centro';
 
-export interface Barrio {
-  id: BarrioId;
+export interface District {
+  id: DistrictId;
   nombre: string;
-  produccion: ResourceKind;
-  activo: boolean;
+  produces: ResourceKind;
+  active: boolean;
 }
 
 // ── Roles ─────────────────────────────────────────────────────────────────────
 
-export type RolId = 'sacerdote' | 'general' | 'comerciante' | 'curandera' | 'astronomo';
+export type RoleId = 'sacerdote' | 'general' | 'comerciante' | 'curandera' | 'astronomo';
 
-export interface Jugador {
-  rol: RolId;
-  nivel: 0 | 1 | 2 | 3;
-  rama: null | 'A' | 'B';
+export interface Player {
+  nombre: string;
+  role: RoleId;
+  level: 0 | 1 | 2 | 3;
+  branch: null | 'A' | 'B';
   cooldown: number;
-  especialUsada: boolean;
-  accionesRestantes: number;
+  specialUsed: boolean;
+  actionsLeft: number;
 }
 
-// ── Cartas de evento ──────────────────────────────────────────────────────────
+// ── Event cards ───────────────────────────────────────────────────────────────
 
-export type CategoriaEvento =
+export type EventCategory =
   | 'ritual'
   | 'redada'
   | 'sitio'
@@ -43,43 +44,51 @@ export type CategoriaEvento =
   | 'epidemia'
   | 'neutral';
 
-export interface CartaEvento {
+export interface EventCard {
   id: string;
   nombre: string;
-  categoria: CategoriaEvento;
-  danoBase: Partial<Record<ResourceKind, number>>;
-  efectoSecundario?: string;
+  category: EventCategory;
+  baseDamage: Partial<Record<ResourceKind, number>>;
+  secondaryEffect?: string;
 }
 
-// ── Sitio prolongado ──────────────────────────────────────────────────────────
+// ── Active siege ──────────────────────────────────────────────────────────────
 
-export interface Sitio {
-  carta: CartaEvento;
-  fase: 1 | 2;
-  ciclosActivo: number;
+export interface Siege {
+  card: EventCard;
+  phase: 1 | 2;
+  cyclesActive: number;
 }
 
-// ── Escenario ─────────────────────────────────────────────────────────────────
+// ── Policy cards ──────────────────────────────────────────────────────────────
 
-export type Dificultad = 'facil' | 'normal' | 'dificil';
-
-export interface Escenario {
+export interface PolicyCard {
   id: string;
   nombre: string;
-  dificultad: Dificultad;
-  ciclosTotales: number;
-  recursosIniciales: Record<ResourceKind, number>;
-  barriosIniciales: BarrioId[];
-  dadoActivo: boolean;
-  nivelDosActivo: boolean;
-  ciudadesAleatorias: boolean;
-  mazoCarta: CartaEvento[];
-  seed: number;
+  optionA: string;
+  optionB: string;
 }
 
-// ── Ciclo en curso ────────────────────────────────────────────────────────────
+// ── Scenario ──────────────────────────────────────────────────────────────────
 
-export type FaseCiclo =
+export type Difficulty = 'facil' | 'normal' | 'dificil';
+
+export interface Scenario {
+  id: string;
+  nombre: string;
+  difficulty: Difficulty;
+  totalCycles: number;
+  initialResources: Record<ResourceKind, number>;
+  initialDistricts: DistrictId[];
+  diceEnabled: boolean;
+  level2Enabled: boolean;
+  randomCities: boolean;
+  cardDeck: EventCard[];
+}
+
+// ── Active cycle ──────────────────────────────────────────────────────────────
+
+export type CyclePhase =
   | 'amanecer'
   | 'consejo'
   | 'acciones'
@@ -87,34 +96,34 @@ export type FaseCiclo =
   | 'consumo'
   | 'completo';
 
-export interface CicloEnCurso {
-  numero: number;
-  fase: FaseCiclo;
-  huboRitual: boolean;
+export interface CurrentCycle {
+  number: number;
+  phase: CyclePhase;
+  hadRitual: boolean;
 }
 
-// ── Resultado y log ───────────────────────────────────────────────────────────
+// ── Result and log ────────────────────────────────────────────────────────────
 
-export type ResultadoPartida = 'en_curso' | 'victoria' | 'derrota';
+export type GameResult = 'en_curso' | 'victoria' | 'derrota';
 
-export interface EntradaLog {
-  ciclo: number;
-  fase: FaseCiclo;
+export interface LogEntry {
+  cycle: number;
+  phase: CyclePhase;
   mensaje: string;
 }
 
-// ── GameState principal ───────────────────────────────────────────────────────
+// ── GameState ─────────────────────────────────────────────────────────────────
 
 export interface GameState {
-  escenario: Escenario;
-  cicloActual: number;
-  recursos: Recursos;
-  barrios: Record<BarrioId, Barrio>;
-  jugadores: Jugador[];
-  mazoEventos: CartaEvento[];
-  cicloEnCurso: CicloEnCurso;
-  hayEpidemia: boolean;
-  sitioActivo: Sitio | null;
-  resultado: ResultadoPartida;
-  log: EntradaLog[];
+  scenario: Scenario;
+  currentCycle: number;
+  resources: Resources;
+  districts: Record<DistrictId, District>;
+  players: Player[];
+  eventDeck: EventCard[];
+  activeCycle: CurrentCycle;
+  hasEpidemic: boolean;
+  activeSiege: Siege | null;
+  result: GameResult;
+  log: LogEntry[];
 }

@@ -1,5 +1,5 @@
-import { saludoTlahtoa, crearPartida, escenarioFacil } from "@tlahtoa/core";
-import type { ResourceKind, BarrioId, RolId } from "@tlahtoa/core";
+import { saludoTlahtoa, createInitialState } from "@tlahtoa/core";
+import type { ResourceKind, DistrictId, RoleId } from "@tlahtoa/core";
 import "./styles.css";
 
 const LABEL_RECURSO: Record<ResourceKind, string> = {
@@ -10,7 +10,7 @@ const LABEL_RECURSO: Record<ResourceKind, string> = {
   conocimiento: "Conocimiento — Toltecayotl",
 };
 
-const LABEL_ROL: Record<RolId, string> = {
+const LABEL_ROL: Record<RoleId, string> = {
   sacerdote:   "Teopixqui — Sacerdote",
   general:     "Cuāuhpilli — General",
   comerciante: "Pochtecatl — Comerciante",
@@ -18,7 +18,16 @@ const LABEL_ROL: Record<RolId, string> = {
   astronomo:   "Tonalpouhqui — Astrónomo",
 };
 
-const estado = crearPartida(escenarioFacil);
+const estado = createInitialState({
+  scenarioId: 1,
+  jugadores: [
+    { nombre: 'Jugador 1', role: 'sacerdote' },
+    { nombre: 'Jugador 2', role: 'general' },
+    { nombre: 'Jugador 3', role: 'curandera' },
+    { nombre: 'Jugador 4', role: 'astronomo' },
+  ],
+  seed: 20250510,
+});
 
 export function App() {
   return (
@@ -30,21 +39,21 @@ export function App() {
       <p className="muted">
         Si ves los recursos abajo, el monorepo funciona y la UI importa desde{" "}
         <code>@tlahtoa/core</code>. Escenario:{" "}
-        <em>{estado.escenario.nombre}</em> — Ciclo {estado.cicloActual}/
-        {estado.escenario.ciclosTotales}
+        <em>{estado.scenario.nombre}</em> — Ciclo {estado.currentCycle}/
+        {estado.scenario.totalCycles}
       </p>
 
       <section>
         <h2>Recursos del escenario fácil</h2>
         <ul className="recursos">
-          {(Object.keys(estado.recursos) as ResourceKind[]).map((key) => {
-            const r = estado.recursos[key];
+          {(Object.keys(estado.resources) as ResourceKind[]).map((key) => {
+            const r = estado.resources[key];
             return (
               <li key={key}>
                 <span className="resource-name">{LABEL_RECURSO[key]}</span>
                 <span className="resource-value">
-                  {r.valor}
-                  <span className="resource-max">/{r.maximo}</span>
+                  {r.value}
+                  <span className="resource-max">/{r.max}</span>
                 </span>
               </li>
             );
@@ -55,13 +64,13 @@ export function App() {
       <section>
         <h2>Barrios</h2>
         <ul className="barrios">
-          {(Object.keys(estado.barrios) as BarrioId[]).map((id) => {
-            const b = estado.barrios[id];
+          {(Object.keys(estado.districts) as DistrictId[]).map((id) => {
+            const b = estado.districts[id];
             return (
-              <li key={id} data-activo={b.activo}>
+              <li key={id} data-activo={b.active}>
                 <span className="barrio-nombre">{b.nombre}</span>
-                <span className={`barrio-estado ${b.activo ? "activo" : "caido"}`}>
-                  {b.activo ? "Activo" : "Caído"}
+                <span className={`barrio-estado ${b.active ? "activo" : "caido"}`}>
+                  {b.active ? "Activo" : "Caído"}
                 </span>
               </li>
             );
@@ -72,11 +81,11 @@ export function App() {
       <section>
         <h2>Consejo</h2>
         <ul className="jugadores">
-          {estado.jugadores.map((j) => (
-            <li key={j.rol}>
-              <span className="rol-nombre">{LABEL_ROL[j.rol]}</span>
+          {estado.players.map((j) => (
+            <li key={j.role}>
+              <span className="rol-nombre">{LABEL_ROL[j.role]}</span>
               <span className="rol-info">
-                Nivel {j.nivel} · {j.accionesRestantes} acc.
+                {j.nombre} · Nivel {j.level} · {j.actionsLeft} acc.
               </span>
             </li>
           ))}
@@ -84,13 +93,13 @@ export function App() {
       </section>
 
       <section>
-        <h2>Mazo de eventos ({estado.mazoEventos.length} cartas)</h2>
+        <h2>Mazo de eventos ({estado.eventDeck.length} cartas)</h2>
         <ul className="mazo">
-          {estado.mazoEventos.map((carta, i) => (
-            <li key={carta.id} className={`carta-${carta.categoria}`}>
+          {estado.eventDeck.map((carta, i) => (
+            <li key={carta.id} className={`carta-${carta.category}`}>
               <span className="carta-pos">#{i + 1}</span>
               <span className="carta-nombre">{carta.nombre}</span>
-              <span className="carta-cat">{carta.categoria}</span>
+              <span className="carta-cat">{carta.category}</span>
             </li>
           ))}
         </ul>
@@ -102,7 +111,7 @@ export function App() {
           {estado.log.map((entrada, i) => (
             <li key={i}>
               <span className="log-meta">
-                Ciclo {entrada.ciclo} — {entrada.fase}
+                Ciclo {entrada.cycle} — {entrada.phase}
               </span>
               <span className="log-msg">{entrada.mensaje}</span>
             </li>
