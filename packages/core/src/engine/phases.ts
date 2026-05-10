@@ -24,15 +24,16 @@ export interface CycleDecisions {
 }
 
 function withWinCheck(state: GameState): GameState {
-  const result = checkWinConditions(state);
+  const { result, reason } = checkWinConditions(state);
   if (result === state.result) return state;
   const endMsg =
     result === 'victoria'
       ? '¡Victoria! El consejo ha guiado la ciudad a la prosperidad.'
-      : 'Derrota. La ciudad no pudo sostenerse.';
+      : `Derrota: ${reason}`;
   return {
     ...state,
     result,
+    defeatReason: result === 'derrota' ? (reason ?? null) : state.defeatReason,
     log: [
       ...state.log,
       { cycle: state.currentCycle, phase: state.activeCycle.phase, mensaje: endMsg },

@@ -127,5 +127,7 @@ export interface GameState {
   hasEpidemic: boolean;
   activeSiege: Siege | null;
   result: GameResult;
+  defeatReason: string | null;
+  greatMilpaCompleted: boolean;
   log: LogEntry[];
 }

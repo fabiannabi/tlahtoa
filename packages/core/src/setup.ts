@@ -69,6 +69,8 @@ export function createInitialState(opts: CreateGameOpts): GameState {
     hasEpidemic: false,
     activeSiege: null,
     result: 'en_curso',
+    defeatReason: null,
+    greatMilpaCompleted: false,
     log: [{ cycle: 1, phase: 'amanecer', mensaje: 'El consejo se reúne.' }],
   };
 }
