@@ -4,6 +4,7 @@
   --accent: #d4a373;
   --jade: #7fb069;
   --muted: #8b7355;
+  --danger: #c0392b;
 }
 
 *,
@@ -21,9 +22,9 @@ body {
 }
 
 .app {
-  max-width: 760px;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 3rem 2rem;
+  padding: 3rem 2rem 5rem;
 }
 
 h1 {
@@ -36,39 +37,48 @@ h1 {
 
 h2 {
   color: var(--jade);
-  font-size: 1.25rem;
-  letter-spacing: 0.03em;
-  border-bottom: 1px solid var(--muted);
-  padding-bottom: 0.5rem;
-  margin-bottom: 1.25rem;
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(139, 115, 85, 0.4);
+  padding-bottom: 0.4rem;
+  margin: 2rem 0 1rem;
+}
+
+section {
+  margin-bottom: 0.5rem;
 }
 
 .lead {
-  font-size: 1.15rem;
-  margin: 0.5rem 0 1rem;
+  font-size: 1.1rem;
+  margin: 0.5rem 0 0.75rem;
 }
 
 .muted {
   color: var(--muted);
   font-size: 0.875rem;
-  margin-bottom: 2.5rem;
+  margin-bottom: 0.5rem;
 }
 
-.muted code {
-  background: rgba(212, 163, 115, 0.15);
+.muted code,
+.muted em {
+  background: rgba(212, 163, 115, 0.12);
   color: var(--accent);
   padding: 0.1em 0.35em;
   border-radius: 4px;
   font-size: 0.85em;
+  font-style: normal;
 }
+
+/* ── Recursos ────────────────────────────────────────────────────────────────── */
 
 ul.recursos {
   list-style: none;
   padding: 0;
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.6rem;
 }
 
 ul.recursos li {
@@ -76,10 +86,10 @@ ul.recursos li {
   justify-content: space-between;
   align-items: center;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(139, 115, 85, 0.4);
+  border: 1px solid rgba(139, 115, 85, 0.35);
   border-radius: 8px;
-  padding: 0.75rem 1rem;
-  transition: border-color 0.2s;
+  padding: 0.65rem 0.9rem;
+  transition: border-color 0.18s;
 }
 
 ul.recursos li:hover {
@@ -87,13 +97,166 @@ ul.recursos li:hover {
 }
 
 .resource-name {
+  font-size: 0.82rem;
   color: var(--fg);
-  font-weight: 500;
 }
 
 .resource-value {
   color: var(--jade);
   font-weight: 700;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   line-height: 1;
+}
+
+.resource-max {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+/* ── Barrios ─────────────────────────────────────────────────────────────────── */
+
+ul.barrios {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+ul.barrios li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.9rem;
+  border-radius: 6px;
+  border: 1px solid rgba(139, 115, 85, 0.25);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.barrio-nombre {
+  font-size: 0.9rem;
+}
+
+.barrio-estado.activo {
+  color: var(--jade);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.barrio-estado.caido {
+  color: var(--danger);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* ── Consejo ─────────────────────────────────────────────────────────────────── */
+
+ul.jugadores {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+ul.jugadores li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.9rem;
+  border-radius: 6px;
+  border: 1px solid rgba(139, 115, 85, 0.25);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.rol-nombre {
+  font-size: 0.9rem;
+  color: var(--accent);
+}
+
+.rol-info {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+/* ── Mazo de eventos ──────────────────────────────────────────────────────────── */
+
+ul.mazo {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+ul.mazo li {
+  display: grid;
+  grid-template-columns: 2rem 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 6px;
+  border: 1px solid rgba(139, 115, 85, 0.2);
+  background: rgba(255, 255, 255, 0.025);
+  font-size: 0.85rem;
+}
+
+.carta-pos {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.carta-nombre {
+  color: var(--fg);
+}
+
+.carta-cat {
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.15em 0.5em;
+  border-radius: 4px;
+}
+
+.carta-redada   .carta-cat { background: rgba(192, 57, 43, 0.2);  color: #e74c3c; }
+.carta-sitio    .carta-cat { background: rgba(192, 57, 43, 0.35); color: #ff6b6b; }
+.carta-ritual   .carta-cat { background: rgba(127, 176, 105, 0.2); color: var(--jade); }
+.carta-neutral  .carta-cat { background: rgba(139, 115, 85, 0.2); color: var(--muted); }
+.carta-epidemia .carta-cat { background: rgba(155, 89, 182, 0.25); color: #c39bd3; }
+
+/* ── Bitácora ──────────────────────────────────────────────────────────────── */
+
+ul.log {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+ul.log li {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.4rem 0.9rem;
+  border-left: 2px solid var(--muted);
+  font-size: 0.875rem;
+}
+
+.log-meta {
+  color: var(--muted);
+  font-size: 0.72rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.log-msg {
+  color: var(--fg);
 }
